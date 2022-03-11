@@ -4,6 +4,7 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import lombok.val;
 
+import static com.codeborne.selenide.Condition.or;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
 
@@ -13,14 +14,12 @@ public class DashboardPage {
     private final String balanceStart = "баланс: ";
     private final String balanceFinish = " р.";
 
-    private SelenideElement depositButton = $("[data-test-id=action-deposit]");
-    private SelenideElement transferButton = $("[data-test-id=action-transfer]");
-    private SelenideElement amountField = $("[data-test-id=amount] input");
-    private SelenideElement fromField = $("[data-test-id=from] input");
-
     public DashboardPage() {
         heading.shouldBe(visible);
-        depositButton.shouldBe(visible);
+    }
+
+    public TransferPage transfer() {
+        return new TransferPage();
     }
 
     public int getFirstCardBalance() {
@@ -33,25 +32,11 @@ public class DashboardPage {
         return extractBalance(text);
     }
 
-    public void transferToCard(int amount) {
-        depositButton.click();
-        amountField.setValue(String.valueOf(amount));
-        fromField.setValue("5559 0000 0000 0002");
-        transferButton.click();
+    public String getCardNumber(int order) {
+        val text = cards.get(order).text();
+        return "5559 0000 0000 " + text.substring(text.lastIndexOf("*") + 1, text.indexOf(balanceStart) - 2);
     }
 
-    public void transferToCard(int amount, int card) {
-        sleep(2000);
-        if (card == 1) {
-            $$("[data-test-id=action-deposit]").last().click();
-        } else {
-            depositButton.click();
-        }
-        amountField.setValue(String.valueOf(amount));
-        fromField.setValue("5559 0000 0000 000" + card);
-        transferButton.click();
-        sleep(2000);
-    }
 
     private int extractBalance(String text) {
         val start = text.indexOf(balanceStart);
